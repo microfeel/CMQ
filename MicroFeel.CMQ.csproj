@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>MicroFeel</Authors>
+    <Company>MicroFeel.Net</Company>
+    <PackageTags>microfeel,qlcoud,cmq</PackageTags>
+    <Description>Tencent cloud message queue service sdk by microfeel.net.腾讯去消息队列SDK</Description>
+    <PackageReleaseNotes>添加了队列设置类</PackageReleaseNotes>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.2</Version>
+    <PackageIconUrl>https://microfeel.net/logo-nano.png</PackageIconUrl>
+    <Copyright>哈尔滨微感科技有限公司</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
+  </ItemGroup>
+
+</Project>
