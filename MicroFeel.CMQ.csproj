@@ -12,14 +12,15 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>MicroFeel</Authors>
     <Company>MicroFeel.Net</Company>
-    <PackageTags>microfeel,qlcoud,cmq</PackageTags>
+    <PackageTags>microfeel,qlcoud,cmq,tencent</PackageTags>
     <Description>Tencent cloud message queue service sdk by microfeel.net.腾讯去消息队列SDK</Description>
-    <PackageReleaseNotes>添加了队列设置类</PackageReleaseNotes>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
-    <Version>1.0.2</Version>
+    <PackageReleaseNotes>优化代码</PackageReleaseNotes>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
+    <Version>1.0.4</Version>
     <PackageIconUrl>https://microfeel.net/logo-nano.png</PackageIconUrl>
     <Copyright>哈尔滨微感科技有限公司</Copyright>
+    <PackageProjectUrl>https://github.com/microfeel/CMQ</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
