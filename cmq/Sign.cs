@@ -10,6 +10,9 @@ namespace MicroFeel.CMQ
     /// </summary>
     public class Sign
     {
+        public static string HMACSHA256= "HmacSHA256";
+        public static string HMACSHA1= "HmacSHA1";
+
         ///<summary>生成签名</summary>
         ///<param name="signStr">被加密串</param>
         ///<param name="secret">加密密钥</param>
@@ -17,15 +20,15 @@ namespace MicroFeel.CMQ
         public static string Signature(string signStr, string secret, string SignatureMethod)
         {
             if (SignatureMethod.ToUpper() == "HMACSHA256")
-                using (HMACSHA256 mac = new HMACSHA256(Encoding.UTF8.GetBytes(secret)))
+                using (var mac = new HMACSHA256(Encoding.UTF8.GetBytes(secret)))
                 {
-                    byte[] hash = mac.ComputeHash(Encoding.UTF8.GetBytes(signStr));
+                    var hash = mac.ComputeHash(Encoding.UTF8.GetBytes(signStr));
                     return Convert.ToBase64String(hash);
                 }
             else
-                using (HMACSHA1 mac = new HMACSHA1(Encoding.UTF8.GetBytes(secret)))
+                using (var mac = new HMACSHA1(Encoding.UTF8.GetBytes(secret)))
                 {
-                    byte[] hash = mac.ComputeHash(Encoding.UTF8.GetBytes(signStr));
+                    var hash = mac.ComputeHash(Encoding.UTF8.GetBytes(signStr));
                     return Convert.ToBase64String(hash);
                 }
         }

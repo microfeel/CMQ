@@ -19,7 +19,7 @@ namespace MicroFeel.CMQ
 
         public CmqAccount(string endpoint, string secretId, string secretKey)
         {
-            client = new CmqClient(secretId, secretKey, endpoint, "/v2/index.php", "POST");
+            client = new CmqClient(secretId, secretKey, endpoint, "/v2/index.php");
         }
 
         public void SetSignMethod(string signMethod)
@@ -43,30 +43,24 @@ namespace MicroFeel.CMQ
                 throw new ArgumentOutOfRangeException($"每页最多{_pageLimit}条记录!");
             }
             SortedDictionary<string, string> param = new SortedDictionary<string, string>();
-            if (!searchWord.Equals(""))
+            if (!string.IsNullOrWhiteSpace(searchWord))
             {
                 param.Add("searchWord", searchWord);
             }
 
-            if (offset >= 0)
+            if (offset > 0)
             {
-                param.Add("offset", Convert.ToString(offset));
+                param.Add("offset", offset.ToString());
             }
 
-            if (limit > 0)
+            if (limit > 0 && limit != _defaultPageLimit)
             {
-                param.Add("limit", Convert.ToString(limit));
+                param.Add("limit", limit.ToString());
             }
 
-            string result =await client.Call("ListQueue", param);
+            string result = await client.Call("ListQueue", param);
 
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
-
             int totalCount = (int)jObj["totalCount"];
             JArray queueListArray = JArray.Parse(jObj["queueList"].ToString());
 
@@ -115,13 +109,7 @@ namespace MicroFeel.CMQ
                 param.Add("msgRetentionSeconds", Convert.ToString(meta.msgRetentionSeconds));
             }
 
-            string result =await client.Call("CreateQueue", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("CreateQueue", param);
         }
 
         public async Task DeleteQueue(string queueName)
@@ -136,13 +124,7 @@ namespace MicroFeel.CMQ
                 param.Add("queueName", queueName);
             }
 
-            string result =await client.Call("DeleteQueue", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("DeleteQueue", param);
         }
 
         public Queue GetQueue(string queueName)
@@ -162,25 +144,19 @@ namespace MicroFeel.CMQ
                 param.Add("searchWord", searchWord);
             }
 
-            if (offset >= 0)
+            if (offset > 0)
             {
-                param.Add("offset", Convert.ToString(offset));
+                param.Add("offset", offset.ToString());
             }
 
-            if (limit > 0)
+            if (limit > 0 && limit != _defaultPageLimit)
             {
-                param.Add("limit", Convert.ToString(limit));
+                param.Add("limit", limit.ToString());
             }
 
-            string result =await client.Call("ListTopic", param);
+            string result = await client.Call("ListTopic", param);
 
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
-
+            var jObj = JObject.Parse(result);
             int totalCount = (int)jObj["totalCount"];
             JArray topicListArray = JArray.Parse(jObj["topicList"].ToString());
             foreach (var item in topicListArray)
@@ -202,7 +178,7 @@ namespace MicroFeel.CMQ
 
         public async Task CreateTopic(string topicName, int maxMsgSize, int filterType = 1)
         {
-            SortedDictionary<string, string> param = new SortedDictionary<string, string>();
+            var param = new SortedDictionary<string, string>();
             if (topicName == "")
             {
                 throw new ClientException("Invalid parameter: topicName is empty");
@@ -212,19 +188,18 @@ namespace MicroFeel.CMQ
                 param.Add("topicName", topicName);
             }
 
-            param.Add("filterType", Convert.ToString(filterType));
-            if (maxMsgSize < 1 || maxMsgSize > 65536)
+            param.Add("filterType", filterType.ToString());
+            if (maxMsgSize < 1 || maxMsgSize > 1024 * 1024)
             {
-                throw new ClientException("Invalid paramter: maxMsgSize > 65536 or maxMsgSize < 1 ");
+                throw new ClientException("Invalid paramter: maxMsgSize > 1024K or maxMsgSize < 1 ");
             }
 
-            string result =await client.Call("CreateTopic", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
+            if (maxMsgSize != 64 * 1024)
             {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
+                param.Add("maxMsgSize", maxMsgSize.ToString());
             }
+
+            await client.Call("CreateTopic", param);
         }
 
         public async Task DeleteTopic(string topicName)
@@ -239,13 +214,7 @@ namespace MicroFeel.CMQ
                 param.Add("topicName", topicName);
             }
 
-            string result =await client.Call("DeleteTopic", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("DeleteTopic", param);
         }
 
         public async Task CreateSubscribe(string topicName, string subscriptionName, string endpoint, string protocol)
@@ -332,13 +301,7 @@ namespace MicroFeel.CMQ
                 }
             }
 
-            string result =await client.Call("Subscribe", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("Subscribe", param);
         }
         public async Task DeleteSubscribe(string topicName, string subscriptionName)
         {
@@ -361,13 +324,7 @@ namespace MicroFeel.CMQ
                 param.Add("subscriptionName", subscriptionName);
             }
 
-            string result =await client.Call("Unsubscribe", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("Unsubscribe", param);
         }
 
         public Subscription GetSubscribe(string topicName, string subscriptionName)

@@ -1,7 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -14,14 +18,15 @@ namespace MicroFeel.CMQ
 
         private readonly string secretId;
         private readonly string secretKey;
-        private readonly string endpoint;
         private readonly string path;
-        private string method;
+        private readonly string endpoint;
+        private string method = "POST";
         /// <summary>
         /// http timeout milseconds
         /// </summary>
         private int timeout;
         private string signMethod;
+        //private readonly HttpClient httpClient;
 
         public void SetHttpMethod(string value)
         {
@@ -39,7 +44,7 @@ namespace MicroFeel.CMQ
         {
             if (value.ToUpper() == "HMACSHA1" || value.ToUpper() == "HMACSHA256")
             {
-                signMethod = value.ToUpper();
+                signMethod = value;
             }
             else
             {
@@ -52,24 +57,30 @@ namespace MicroFeel.CMQ
             timeout = value;
         }
 
-        public CmqClient(string secretId, string secretKey, string endpoint, string path, string method)
+        public CmqClient(string secretId, string secretKey, string endpoint, string path/*, HttpClient client*/, string httpMethod = "POST")
         {
             this.secretId = secretId;
             this.secretKey = secretKey;
             this.endpoint = endpoint;
+            method = httpMethod;
             if (!(endpoint.StartsWith("http://") || endpoint.StartsWith("https://")))
             {
                 throw new ClientException("endpoint only support http or https");
             }
 
             this.path = path;
-            this.method = method;
-            signMethod = "HMACSHA1";
+            //if (client == null)
+            //{
+            //    throw new ClientException("httpclient不能为空.");
+            //}
+            //this.httpClient = client;
+            signMethod = Sign.HMACSHA256;
             timeout = 10000;       //10s
         }
 
         public async Task<string> Call(string action, SortedDictionary<string, string> param)
         {
+            //添加公共参数
             Random ran = new Random();
             int nonce = ran.Next(int.MaxValue);
             param.Add("Action", action);
@@ -78,45 +89,26 @@ namespace MicroFeel.CMQ
             int timestamp = (int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
             param.Add("Timestamp", Convert.ToString(timestamp));
             param.Add("RequestClient", CURRENT_VERSION);
-            if (signMethod.ToUpper() == "HMACSHA1")
-            {
-                param.Add("SignatureMethod", "HmacSHA1");
-            }
-            else
-            {
-                param.Add("SignatureMethod", "HmacSHA256");
-            }
+            param.Add("SignatureMethod", signMethod);
+            //拼接签名串
+            string host = new Uri(endpoint).Host;
 
-            string host = "";
-            if (endpoint.StartsWith("https"))
-            {
-                host = endpoint.Substring(8);
-            }
-            else
-            {
-                host = endpoint.Substring(7);
-            }
-
-            string src = method + host + path + "?";
+            string src = $"{method}{host}{path}?";
 
             src += string.Join("&", param.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => $"{p.Key.Replace("_", ".")}={p.Value}"));
-
+            //签名
             param.Add("Signature", Sign.Signature(src, secretKey, signMethod));
 
-            string url = endpoint + path;
-            string req = "";
+            var url = endpoint + path;
+            var req = string.Join("&", param.Select(p => $"{p.Key}={HttpUtility.UrlEncode(p.Value)}")); ;
             if (method.ToUpper() == "GET")
             {
-                url += "?" + string.Join("&", param.Select(p => $"{p.Key}={HttpUtility.UrlEncode(p.Value)}"));
+                url += $"?{req}";
 
                 if (url.Length > 2048)
                 {
                     throw new ClientException("URL length is larger than 2K when use the GET method ");
                 }
-            }
-            else
-            {
-                req += string.Join("&", param.Select(p => $"{p.Key}={HttpUtility.UrlEncode(p.Value)}"));
             }
 
             using (var httpreq = new HttpRequestMessage(new HttpMethod(method), url))
@@ -125,8 +117,51 @@ namespace MicroFeel.CMQ
                 httpreq.Content = new StringContent(req);
                 httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
                 var rspMessage = await httpClient.SendAsync(httpreq);
-                return await rspMessage.Content.ReadAsStringAsync();
+                var result = await rspMessage.Content.ReadAsStringAsync();
+                var jObj = JObject.Parse(result);
+                int code = (int)jObj["code"];
+                if (code != 0 && code != 7000)
+                {
+                    throw new ServerException(code, jObj["message"].ToString(), action);
+                }
+                return result;
             }
         }
+
+        /// <summary>
+        /// Post提交数据
+        /// </summary>
+        /// <param name="postUrl">URL</param>
+        /// <param name="paramData">参数</param>
+        /// <returns></returns>
+        private string PostWebRequest(string postUrl, string paramData)
+        {
+            string ret = string.Empty;
+            try
+            {
+                byte[] byteArray = Encoding.UTF8.GetBytes(paramData); //转化 /
+                HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(new Uri(postUrl));
+                webReq.Method = "POST";
+                webReq.ContentType = "application/x-www-form-urlencoded";
+
+                webReq.ContentLength = byteArray.Length;
+                Stream newStream = webReq.GetRequestStream();
+                newStream.Write(byteArray, 0, byteArray.Length);//写入参数
+                newStream.Close();
+                HttpWebResponse response = (HttpWebResponse)webReq.GetResponse();
+                StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
+                ret = sr.ReadToEnd();
+                sr.Close();
+                response.Close();
+                newStream.Close();
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+            return ret;
+        }
+
+
     }
 };

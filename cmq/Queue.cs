@@ -46,13 +46,7 @@ namespace MicroFeel.CMQ
                 param.Add("msgRetentionSeconds", Convert.ToString(meta.msgRetentionSeconds));
             }
 
-            string result = await client.Call("SetQueueAttributes", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("SetQueueAttributes", param);
         }
 
         public async Task<QueueMeta> GetQueueAttributes()
@@ -64,11 +58,6 @@ namespace MicroFeel.CMQ
 
             string result = await client.Call("GetQueueAttributes", param);
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             return new QueueMeta
             {
@@ -103,12 +92,6 @@ namespace MicroFeel.CMQ
 
             string result = await client.Call("SendMessage", param);
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
-
             return jObj["msgId"].ToString();
         }
 
@@ -133,11 +116,6 @@ namespace MicroFeel.CMQ
             string result = await client.Call("BatchSendMessage", param);
 
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             List<string> vtMsgId = new List<string>();
             JArray idsArray = JArray.Parse(jObj["msgList"].ToString());
@@ -171,10 +149,6 @@ namespace MicroFeel.CMQ
             {
                 return null;
             }
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             return new Message
             {
@@ -206,11 +180,6 @@ namespace MicroFeel.CMQ
             }
             string result = await client.Call("BatchReceiveMessage", param);
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             List<Message> vtMsg = new List<Message>();
             JArray idsArray = JArray.Parse(jObj["msgInfoList"].ToString());
@@ -239,15 +208,7 @@ namespace MicroFeel.CMQ
                 { "receiptHandle", receiptHandle }
             };
 
-            string result = await client.Call("DeleteMessage", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
-
-
+            await client.Call("DeleteMessage", param);
         }
 
         public async Task BatchDeleteMessage(List<string> vtReceiptHandle)
@@ -267,13 +228,7 @@ namespace MicroFeel.CMQ
                 param.Add(k, vtReceiptHandle[i]);
             }
 
-            string result = await client.Call("BatchDeleteMessage", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("BatchDeleteMessage", param);
         }
     }
 }

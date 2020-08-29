@@ -28,13 +28,7 @@ namespace MicroFeel.CMQ
 
             param.Add("maxMsgSize", Convert.ToString(maxMsgSize));
 
-            string result =await client.Call("SetTopicAttributes", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("SetTopicAttributes", param);
         }
 
 
@@ -45,13 +39,8 @@ namespace MicroFeel.CMQ
                 { "topicName", topicName }
             };
 
-            string result =await client.Call("GetTopicAttributes", param);
+            string result = await client.Call("GetTopicAttributes", param);
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             var meta = new TopicMeta
             {
@@ -67,7 +56,7 @@ namespace MicroFeel.CMQ
 
         public async Task<string> PublishMessage(string msgBody)
         {
-            return await PublishMessage(msgBody, new List<string>(), " ");
+            return await PublishMessage(msgBody, new List<string>(), "");
         }
 
         public async Task<string> PublishMessage(string msgBody, string routingKey)
@@ -91,17 +80,12 @@ namespace MicroFeel.CMQ
             {
                 for (int i = 0; i < tagList.Count; i++)
                 {
-                    string k = "msgTag." + Convert.ToString(i + 1);
+                    string k = $"msgTag.{i + 1}";
                     param.Add(k, tagList[i]);
                 }
             }
-            string result =await client.Call("PublishMessage", param);
+            string result = await client.Call("PublishMessage", param);
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             return jObj["msgId"].ToString();
 
@@ -124,7 +108,7 @@ namespace MicroFeel.CMQ
                 { "topicName", topicName }
             };
 
-            if (routingKey != null)
+            if (!string.IsNullOrEmpty(routingKey))
             {
                 param.Add("routingKey", routingKey);
             }
@@ -133,7 +117,7 @@ namespace MicroFeel.CMQ
             {
                 for (int i = 0; i < vMsgBody.Count; i++)
                 {
-                    string k = "msgBody." + Convert.ToString(i + 1);
+                    string k = $"msgBody.{i + 1}";
                     param.Add(k, vMsgBody[i]);
                 }
             }
@@ -141,28 +125,22 @@ namespace MicroFeel.CMQ
             {
                 for (int i = 0; i < vTagList.Count; i++)
                 {
-                    string k = "msgTag" + Convert.ToString(i + 1);
+                    string k = $"msgTag{i + 1}";
                     param.Add(k, vTagList[i]);
                 }
             }
 
-            string result =await client.Call("BatchPublishMessage", param);
+            string result = await client.Call("BatchPublishMessage", param);
 
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            var jObj = JObject.Parse(result);
 
-            List<string> vMsgId = new List<string>();
-            JArray idsArray = JArray.Parse(jObj["msgList"].ToString());
+            var vMsgId = new List<string>();
+            var idsArray = JArray.Parse(jObj["msgList"].ToString());
             foreach (var item in idsArray)
             {
                 vMsgId.Add(item["msgId"].ToString());
             }
             return vMsgId;
-
         }
 
         public async Task<int> ListSubscription(int offset, int limit, string searchWord, IList<string> subscriptionList)
@@ -186,14 +164,9 @@ namespace MicroFeel.CMQ
                 param.Add("limit", Convert.ToString(limit));
             }
 
-            string result =await client.Call("ListSubscriptionByTopic", param);
+            string result = await client.Call("ListSubscriptionByTopic", param);
 
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             int totalCount = (int)jObj["totalCount"];
             if (jObj["subscriptionList"] != null)

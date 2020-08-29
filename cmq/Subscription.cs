@@ -24,13 +24,7 @@ namespace MicroFeel.CMQ
                 { "subscriptionName", subscriptionName }
             };
 
-            string result = await client.Call("ClearSUbscriptionFIlterTags", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("ClearSUbscriptionFIlterTags", param);
         }
 
         public async Task SetSubscriptionAttributes(SubscriptionMeta meta)
@@ -65,13 +59,7 @@ namespace MicroFeel.CMQ
                 }
             }
 
-            string result = await client.Call("SetSubscriptionAttributes", param);
-            JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
+            await client.Call("SetSubscriptionAttributes", param);
         }
 
         public async Task<SubscriptionMeta> GetSubscriptionAttributes()
@@ -84,11 +72,6 @@ namespace MicroFeel.CMQ
 
             string result = await client.Call("getSubscriptionAttributes", param);
             JObject jObj = JObject.Parse(result);
-            int code = (int)jObj["code"];
-            if (code != 0)
-            {
-                throw new ServerException(code, jObj["message"].ToString(), jObj["requestId"].ToString());
-            }
 
             SubscriptionMeta meta = new SubscriptionMeta
             {
