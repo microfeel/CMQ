@@ -14,10 +14,10 @@
     <Company>MicroFeel.Net</Company>
     <PackageTags>microfeel,qlcoud,cmq,tencent</PackageTags>
     <Description>Tencent cloud message queue service sdk by microfeel.net.腾讯去消息队列SDK</Description>
-    <PackageReleaseNotes>优化代码</PackageReleaseNotes>
-    <AssemblyVersion>1.0.4.0</AssemblyVersion>
-    <FileVersion>1.0.4.0</FileVersion>
-    <Version>1.0.4</Version>
+    <PackageReleaseNotes>解决publishMessage 失败的BUG,感谢腾讯云团队的技术支持</PackageReleaseNotes>
+    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <FileVersion>1.0.5.0</FileVersion>
+    <Version>1.0.5</Version>
     <PackageIconUrl>https://microfeel.net/logo-nano.png</PackageIconUrl>
     <Copyright>哈尔滨微感科技有限公司</Copyright>
     <PackageProjectUrl>https://github.com/microfeel/CMQ</PackageProjectUrl>

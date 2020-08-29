@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace QCloud.Test
@@ -85,14 +86,15 @@ namespace QCloud.Test
             try
             {
                 var Topic = topicAccount.GetTopic("DaShu-K3");
-                //var message = "{\"FItemId\":0,\"Name\":\"产品部2\",\"Number\":\"0004\",\"ShortNumber\":null,\"PhoneNumber\":null,\"FaxNumber\":null,\"ParentNumber\":null,\"IsWorkShop\":false}";
+                //var message = "this is a short message";
                 var message = File.ReadAllText(".\\msg.json");
-                var ss = await Topic.PublishMessage(message, new List<string> { "模式凭证列表" }, "");
+                //topicAccount.SetHttpMethod("GET");
+                var ss = await Topic.PublishMessage(message, new List<string> { "中文标签测试", "entag" }, "");
                 Console.WriteLine(ss);
             }
             catch (ServerException ex)
             {
-                Console.WriteLine(ex.errorMessage);
+                Console.WriteLine(ex.ToString());
             }
             catch (Exception ex)
             {
