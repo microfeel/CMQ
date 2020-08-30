@@ -26,7 +26,7 @@ namespace MicroFeel.CMQ
         /// </summary>
         private int timeout;
         private string signMethod;
-        //private readonly HttpClient httpClient;
+        private static HttpClient httpClient;
 
         public void SetHttpMethod(string value)
         {
@@ -57,7 +57,7 @@ namespace MicroFeel.CMQ
             timeout = value;
         }
 
-        public CmqClient(string secretId, string secretKey, string endpoint, string path/*, HttpClient client*/, string httpMethod = "POST")
+        public CmqClient(string secretId, string secretKey, string endpoint, string path, HttpClient client, string httpMethod = "POST")
         {
             this.secretId = secretId;
             this.secretKey = secretKey;
@@ -69,11 +69,7 @@ namespace MicroFeel.CMQ
             }
 
             this.path = path;
-            //if (client == null)
-            //{
-            //    throw new ClientException("httpclient不能为空.");
-            //}
-            //this.httpClient = client;
+            httpClient = client;
             signMethod = Sign.HMACSHA256;
             timeout = 10000;       //10s
         }
@@ -134,8 +130,13 @@ namespace MicroFeel.CMQ
                 }
             }
 
+            //为兼容老程序，未注入的httpclient将被手工构造
+            if (httpClient == null)
+            {
+                httpClient = new HttpClient();
+            }
+
             using (var httpreq = new HttpRequestMessage(new HttpMethod(method), url))
-            using (var httpClient = new HttpClient())
             {
                 httpreq.Content = new StringContent(req, Encoding.UTF8, "text/json");
                 httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
