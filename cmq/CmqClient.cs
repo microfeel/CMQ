@@ -137,7 +137,7 @@ namespace MicroFeel.CMQ
             using (var httpreq = new HttpRequestMessage(new HttpMethod(method), url))
             using (var httpClient = new HttpClient())
             {
-                httpreq.Content = new StringContent(req);
+                httpreq.Content = new StringContent(req, Encoding.UTF8, "text/json");
                 httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
                 var rspMessage = await httpClient.SendAsync(httpreq);
                 var result = await rspMessage.Content.ReadAsStringAsync();
