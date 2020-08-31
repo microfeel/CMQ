@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 
 
 namespace MicroFeel.CMQ
@@ -24,7 +21,6 @@ namespace MicroFeel.CMQ
         /// <summary>
         /// http timeout milseconds
         /// </summary>
-        private int timeout;
         private string signMethod;
         private static HttpClient httpClient;
 
@@ -52,11 +48,6 @@ namespace MicroFeel.CMQ
             }
         }
 
-        public void SetTimeout(int value)
-        {
-            timeout = value;
-        }
-
         public CmqClient(string secretId, string secretKey, string endpoint, string path, HttpClient client, string httpMethod = "POST")
         {
             this.secretId = secretId;
@@ -71,7 +62,6 @@ namespace MicroFeel.CMQ
             this.path = path;
             httpClient = client;
             signMethod = Sign.HMACSHA256;
-            timeout = 10000;       //10s
         }
         //转义字符编码
         private string EncodeString(string str)
@@ -139,7 +129,6 @@ namespace MicroFeel.CMQ
             using (var httpreq = new HttpRequestMessage(new HttpMethod(method), url))
             {
                 httpreq.Content = new StringContent(req, Encoding.UTF8, "text/json");
-                httpClient.Timeout = TimeSpan.FromMilliseconds(timeout);
                 var rspMessage = await httpClient.SendAsync(httpreq);
                 var result = await rspMessage.Content.ReadAsStringAsync();
                 var jObj = JObject.Parse(result);
@@ -149,6 +138,14 @@ namespace MicroFeel.CMQ
                     throw new ServerException(result, action);
                 }
                 return result;
+            }
+        }
+        ~CmqClient()
+        {
+            if (httpClient != null)
+            {
+                httpClient.Dispose();
+                httpClient = null;
             }
         }
     }

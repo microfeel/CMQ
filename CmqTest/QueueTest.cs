@@ -1,18 +1,29 @@
 using MicroFeel.CMQ;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace QCloud.Test
 {
     [TestClass]
-    public class QueueTest: TestBase
+    public class QueueTest : TestBase
     {
         private string GetRandomQueueName => $"TestQueue{new Random(DateTime.Now.Millisecond).Next(10000):D5}";
+        private readonly CmqAccount queueAccount;
+
+        public QueueTest()
+        {
+            var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("queue");
+            queueAccount = new CmqAccount(client,
+                          Configuration["QcloudSecret:SecretId"],
+                          Configuration["QcloudSecret:SecretKey"]);
+        }
 
         [TestMethod]
         public async Task CreateQueue()
@@ -34,7 +45,6 @@ namespace QCloud.Test
         {
             try
             {
-
                 Console.WriteLine("É¾³ýÖ®Ç°=============================");
                 var queues = new List<string>();
                 var totalCount = await queueAccount.ListQueue("TestQueue", queues);

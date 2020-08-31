@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace MicroFeel.CMQ
@@ -19,7 +20,12 @@ namespace MicroFeel.CMQ
 
         public CmqAccount(string endpoint, string secretId, string secretKey)
         {
-            client = new CmqClient(secretId, secretKey, endpoint, "/v2/index.php");
+            client = new CmqClient(secretId, secretKey, endpoint, "/v2/index.php", null);
+        }
+
+        public CmqAccount(HttpClient httpClient, string secretId, string secretKey)
+        {
+            client = new CmqClient(secretId, secretKey, httpClient.BaseAddress.OriginalString, "/v2/index.php", httpClient);
         }
 
         public void SetSignMethod(string signMethod)
@@ -29,11 +35,6 @@ namespace MicroFeel.CMQ
         public void SetHttpMethod(string method)
         {
             client.SetHttpMethod(method);
-        }
-        public void SetTimeout(int timeout)
-        {
-            //timeout is milseconds for the http request
-            client.SetTimeout(timeout);
         }
 
         public async Task<int> ListQueue(string searchWord, List<string> queueList, int offset = 0, int limit = _defaultPageLimit)

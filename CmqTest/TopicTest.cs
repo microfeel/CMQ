@@ -1,9 +1,12 @@
 using MicroFeel.CMQ;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +16,15 @@ namespace QCloud.Test
     public class TopicTest : TestBase
     {
         private string GetRandomTopicName => $"TestTopic{new Random(DateTime.Now.Millisecond).Next(10000):D5}";
+        private readonly CmqAccount topicAccount;
 
+        public TopicTest()
+        {
+            var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("topic");
+            topicAccount = new CmqAccount(client,
+                                     Configuration["QcloudSecret:SecretId"],
+                                     Configuration["QcloudSecret:SecretKey"]);
+        }
 
         [TestMethod]
         public async Task CreateTopic()

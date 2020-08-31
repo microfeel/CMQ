@@ -141,7 +141,6 @@ namespace MicroFeel.CMQ
             //else {
             //    param.Add("UserpollingWaitSeconds", Convert.ToString(30000));
             //}
-            client.SetTimeout(Convert.ToInt32(TimeSpan.FromMinutes(pollingWaitSeconds + 5).TotalMilliseconds));
             string result = await client.Call("ReceiveMessage", param);
             JObject jObj = JObject.Parse(result);
             int code = (int)jObj["code"];
